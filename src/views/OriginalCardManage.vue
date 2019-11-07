@@ -198,8 +198,8 @@ export default {
     this.handleGetList();
   },
   methods: {
-    test: function(e){
-      console.log(this.pushTimeInp)
+    test: function(e) {
+      console.log(this.pushTimeInp);
     },
     handleGetTopicList: function() {
       return new Promise(resolve => {
@@ -249,7 +249,7 @@ export default {
       if (scope.row.url_info.desc) {
         this.urlDescInp = scope.row.url_info.desc;
       }
-      this.pushTimeInp = scope.row.send_time
+      this.pushTimeInp = scope.row.send_time;
       this.guidInp = scope.row.guid;
       this.pushInp = scope.row.push_text;
       this.robotInp = scope.row.bot_id;
@@ -307,34 +307,42 @@ export default {
       if (this.urlTitleInp != "") {
         url_info.title = this.urlTitleInp;
       }
-      let data = {
-        bot_id: this.robotInp,
-        id: this.currentScope == "" ? undefined : this.currentScope.row.id,
-        images: JSON.stringify(images),
-        send_time: this.pushTimeInp,
-        video: this.videoInp,
-        text: this.descInp,
-        push_text: this.pushInp,
-        title: this.titleInp,
-        url: this.urlInp,
-        job_id: this.topicInp,
-        url_info:
-          Object.keys(url_info).length === 0
-            ? undefined
-            : JSON.stringify(url_info),
-        guid: this.guidInp
-      };
-      this.$utils.axiosRequest(
-        "POST",
-        `/card/self-create-content/store`,
-        "",
-        data,
-        res => {
-          this.handleSearch();
-          this.showConfigDialog = false;
-        },
-        res => {}
-      );
+      this.$confirm(`发布的内容将于：${this.pushTimeInp} 推送 `, "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning"
+      })
+        .then(() => {
+          let data = {
+            bot_id: this.robotInp,
+            id: this.currentScope == "" ? undefined : this.currentScope.row.id,
+            images: JSON.stringify(images),
+            send_time: this.pushTimeInp,
+            video: this.videoInp,
+            text: this.descInp,
+            push_text: this.pushInp,
+            title: this.titleInp,
+            url: this.urlInp,
+            job_id: this.topicInp,
+            url_info:
+              Object.keys(url_info).length === 0
+                ? undefined
+                : JSON.stringify(url_info),
+            guid: this.guidInp
+          };
+          this.$utils.axiosRequest(
+            "POST",
+            `/card/self-create-content/store`,
+            "",
+            data,
+            res => {
+              this.handleSearch();
+              this.showConfigDialog = false;
+            },
+            res => {}
+          );
+        })
+        .catch(e => {});
     },
     handleUploadRemove: function(file, fileList) {
       this.fileList = fileList;
@@ -368,7 +376,7 @@ export default {
       this.urlDescInp = "";
       this.urlTitleInp = "";
       this.titleInp = "";
-      this.pushTimeInp = ""
+      this.pushTimeInp = "";
       this.descInp = "";
       this.pushInp = "";
       this.imagesInp = [];

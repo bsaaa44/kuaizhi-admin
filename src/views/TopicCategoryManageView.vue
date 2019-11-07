@@ -17,12 +17,18 @@
         </el-table-column>
         <el-table-column prop='topics_count' label='包含主题（个）' ></el-table-column>
         <el-table-column prop='sort' label='排序'></el-table-column>
+        <el-table-column label='状态'>
+          <template slot-scope='scope'>
+            {{scope.row.visible == 1?"上架":scope.row.visible==0?"下架":"隐藏但可搜索"}}
+          </template>
+        </el-table-column>
         <el-table-column label='操作' >
           <template slot-scope='scope'>
             <el-button type='text' @click='handleShowEdit(scope)'>修改</el-button>
             <el-button type='text' @click='handleDelete(scope)'>删除</el-button>
-            <el-button type='text' v-if='scope.row.visible==0' @click='handlePut(scope,1)'>上架</el-button>
-            <el-button type='text' v-if='scope.row.visible==1' @click='handlePut(scope,0)'>下架</el-button>
+            <el-button type='text' v-if='scope.row.visible!=1' @click='handlePut(scope,1)'>上架</el-button>
+            <el-button type='text' v-if='scope.row.visible!=0' @click='handlePut(scope,0)'>下架</el-button>
+            <el-button type='text' @click='handlePut(scope,2)'>改为隐藏但可搜索</el-button>
           </template>
         </el-table-column>
       </el-table>

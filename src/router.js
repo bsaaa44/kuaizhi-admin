@@ -25,13 +25,21 @@ import MediaMonitor from './views/MediaMonitor.vue'
 import CardMonitorView from './views/CardMonitorView.vue'
 import PictureMonitor from './views/PictureMonitor.vue'
 import LabelManageView from './views/LabelManageView.vue'
+import WaitDeleteView from './views/WaitDeleteView.vue'
+import ThemeBannerManageView from './views/ThemeBannerMangeView.vue'
+import BotSubjectView from './views/BotSubjectView.vue'
+import ThemeSubjectView from './views/ThemeSubjectView.vue'
+import CommentManageView from './views/CommentManageView.vue'
+import ServerMessage from './views/ServerMessage.vue'
+import SensitiveManage from './views/SensitiveManage.vue'
+import SensitiveCheckManage from './views/SensitiveCheckManage.vue'
 
 Vue.use(Router)
 
 export default new Router({
   mode: 'history',
   // base: process.env.BASE_URL,
-  base: '/admin-web',
+  // base: '/admin-web',
   routes: [
     {
       path: '/',
@@ -152,10 +160,51 @@ export default new Router({
           name: 'pictureMonitor',
           path: 'pictureMonitor',
           component: PictureMonitor
-        },{
+        },
+        {
           name: 'labelManageView',
           path: 'labelManageView',
           component: LabelManageView
+        },
+        {
+          name: 'waitDeleteView',
+          path: 'waitDeleteView',
+          component: WaitDeleteView
+        },
+        {
+          name: 'themeBannerManageView',
+          path: 'themeBannerManageView',
+          component: ThemeBannerManageView
+        },
+        {
+          name: 'botSubjectView',
+          path: 'botSubjectView',
+          component: BotSubjectView
+        },
+        {
+          name: 'themeSubjectView',
+          path: 'themeSubjectView',
+          component: ThemeSubjectView
+        },
+        {
+          name: 'commentManageView',
+          path: 'commentManageView',
+          component: CommentManageView
+        },
+        {
+          name: 'serverMessage',
+          path: 'serverMessage',
+          component: ServerMessage
+        },
+        {
+          name: 'sensitiveManage',
+          path: 'sensitiveManage',
+          component: SensitiveManage
+        },
+        {
+          name: 'sensitiveCheckManage',
+          path: 'sensitiveCheckManage',
+          component: SensitiveCheckManage
         }
       ]
     }

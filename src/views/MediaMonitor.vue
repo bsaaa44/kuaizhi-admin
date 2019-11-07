@@ -53,30 +53,30 @@
       >
         <el-option label="请选择" value></el-option>
         <el-option
-          label="请选择"
+          :label="item.name"
           v-for="(item,index) in botsList"
           :key="index"
           :value="item.id"
         >{{item.name}}</el-option>
       </el-select>
-      <el-button type="primary" size="mini" v-if="!showMultiMode" @click="showMultiMode = true">批量删除</el-button>
-      <el-button type="danger" size="mini" v-if="showMultiMode" @click="handleMultiDelete">删除</el-button>
+      <!-- <el-button type="primary" size="mini" v-if="!showMultiMode" @click="showMultiMode = true">批量删除</el-button>
+      <el-button type="danger" size="mini" v-if="showMultiMode" @click="handleMultiDelete">删除</el-button> -->
       <el-button
-        type="primary"
+        type="success"
         size="mini"
-        v-if="!showMultiPassMode"
-        @click="showMultiPassMode = true"
+        @click="handleMultiPass"
       >批量通过</el-button>
-      <el-button type="success" size="mini" v-if="showMultiPassMode" @click="handleMultiPass">通过</el-button>
-      <el-button
+      <!-- <el-button type="success" size="mini" v-if="showMultiPassMode" @click="handleMultiPass">通过</el-button> -->
+      <!-- <el-button
         type="primary"
         size="mini"
         v-if="showMultiPassMode"
         @click="showMultiPassMode = false"
-      >取消</el-button>
+      >取消</el-button> -->
     </div>
     <div>
-      <el-checkbox-group class="media-block" v-model="checkBoxList">
+      <div class="media-block">
+      <!-- <el-checkbox-group class="media-block" v-model="checkBoxList" @change="test()"> -->
         <div class="items" v-for="(item,index) in list" :key="index">
           <div class="media-container" @click="handleShowPop(item)">
             <template v-if="item.media.type == 'image'">
@@ -101,14 +101,15 @@
             @click="handleDelete(item)"
             v-if="!showMultiMode"
           >删除</el-button>
-          <el-checkbox
-            :checked="true"
+          <!-- <el-checkbox
+            :checked="checked"
             :label="item.media|jsonMedia"
             v-if="showMultiMode||showMultiPassMode"
             style="margin-top:10px"
-          >选中</el-checkbox>
+          >选中</el-checkbox> -->
         </div>
-      </el-checkbox-group>
+      </div>
+      <!-- </el-checkbox-group> -->
     </div>
     <div class="pagination">
       <el-pagination
@@ -152,6 +153,7 @@ export default {
       botInp: "",
       list: [],
       botsList: [],
+      checked: false,
       checkBoxList: [],
       tableLoading: false,
       showMediaPop: false,
@@ -173,6 +175,9 @@ export default {
     this.handleGetBotsList();
   },
   methods: {
+    test: function(){
+      console.log(this.checkBoxList)
+    },
     handleGetBotsList: function() {
       this.$utils.axiosRequest(
         "GET",
@@ -190,31 +195,27 @@ export default {
       this.handleGetList();
     },
     handleMultiPass: function() {
-      if (this.checkBoxList.length == 0) {
-        this.checkBoxList = [];
-        this.showMultiPassMode = false;
-      } else {
-        let arr = [];
-        for (let i of this.checkBoxList) {
-          i = JSON.parse(i);
-          arr.push(i);
-        }
-        let data = {
-          images: JSON.stringify(arr)
-        };
-        this.$utils.axiosRequest(
-          "POST",
-          `/image/accept`,
-          "",
-          data,
-          res => {
-            this.handleGetList();
-            this.checkBoxList = [];
-            this.showMultiPassMode = false;
-          },
-          res => {}
-        );
+      let arr = [];
+      for (let i of this.list) {
+        arr.push(i.media);
       }
+      let data = {
+        images: JSON.stringify(arr)
+      };
+      this.$utils.axiosRequest(
+        "POST",
+        `/image/accept`,
+        "",
+        data,
+        res => {
+          this.handleGetList();
+          // this.list = [];
+          this.checkBoxList = [];
+          this.showMultiPassMode = false;
+        },
+        res => {}
+      );
+     
     },
     handleMultiDelete: function() {
       if (this.checkBoxList.length == 0) {
@@ -327,6 +328,7 @@ export default {
           this.list = res.data.list;
           this.paginate = res.data.paginate;
           this.$nextTick(() => {
+            this.checked = true
             // this.initPlayer();
           });
         },
@@ -335,10 +337,14 @@ export default {
     },
     handleSearch: function() {
       this.currentPage = 1;
-      this.handleGetList();
+      this.checkBoxList = [];
+      this.$nextTick(()=>{
+        this.handleGetList();
+      })
     },
     handleClear: function() {
       this.keyword = "";
+      this.checkBoxList = []
       this.currentPage = 1;
       this.dataRange = "";
       this.handleGetList();

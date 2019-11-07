@@ -127,6 +127,9 @@
         <el-table-column prop="is_hot" label="热门" width="100">
           <template slot-scope="scope">{{scope.row.is_hot == 1?"热门":"非热门"}}</template>
         </el-table-column>
+        <el-table-column prop="is_hot" label="Pro" width="100">
+          <template slot-scope="scope">{{scope.row.is_hot == 1?"Pro":"非Pro"}}</template>
+        </el-table-column>
         <el-table-column prop="status" label="运行状态" width="100">
           <template
             slot-scope="scope"
@@ -371,9 +374,18 @@
             <span class="name">{{item.replyer.name}}</span>
           </template>
           <span class="content">:{{item.content}}</span>
-          <img v-if="item.image!=''" :src="item.image" />
+          <img v-if="item.image!=''" :src="item.image" style="width:100%" />
         </div>
         <el-button size="mini" style="margin-left:20px" @click="showReplyBlock(item.id)">回复</el-button>
+      </div>
+      <div class="pagination">
+        <el-pagination
+          v-if="commentList.length!=0"
+          :total="paginate2.total"
+          :page-size="20"
+          layout="total,prev,pager,next,jumper"
+          @current-change="bindPageChange3"
+        ></el-pagination>
       </div>
     </el-dialog>
     <el-dialog
@@ -533,7 +545,7 @@ export default {
     this.handleGetList();
   },
   methods: {
-    handleDelete: function(scope){
+    handleDelete: function(scope) {
       this.$confirm("是否执行该操作", "提示", {
         confirmButtonText: "确定",
         cancelButtonText: "取消",
@@ -543,7 +555,7 @@ export default {
           let data = {
             id: scope.row.id,
             owner_id: scope.row.user_id
-          }
+          };
           this.$utils.axiosRequest(
             "POST",
             `/robot/delete`,
@@ -554,8 +566,9 @@ export default {
             },
             res => {}
           );
-        }).catch()
-    },  
+        })
+        .catch();
+    },
     handleStart: function(scope) {
       this.$confirm("是否执行该操作", "提示", {
         confirmButtonText: "确定",
@@ -605,7 +618,9 @@ export default {
         .catch(() => {});
     },
     handleOpenWeb: function(scope) {
-      window.open("https://kz.sync163.com/web/topic/" + scope.row.hash_id);
+      window.open(
+        "https://kzfeed.com/home/themeDetail?id=" + scope.row.hash_id
+      );
     },
     handleFakeReply: function() {
       let data = {
@@ -814,16 +829,16 @@ export default {
       this.$prompt("是否执行此操作", "提示", {
         confirmButtonText: "确定",
         cancelButtonText: "取消",
-        beforeClose(action,instance,done){
-          if(action=="confirm"){
-            instance.$refs["confirm"].$el.onclick=function(e){
-              e=e||window.event
-              if(e.detail!=0){
-                done()
+        beforeClose(action, instance, done) {
+          if (action == "confirm") {
+            instance.$refs["confirm"].$el.onclick = function(e) {
+              e = e || window.event;
+              if (e.detail != 0) {
+                done();
               }
-            }
-          }else{
-            done()
+            };
+          } else {
+            done();
           }
         }
       })
@@ -997,6 +1012,10 @@ export default {
         page: val
       };
       this.handleGetList(data);
+    },
+    bindPageChange3: function(val) {
+      this.currentPage2 = val;
+      this.handleGetCommentList(this.currentScope);
     },
     bindPageChange2: function(val) {
       this.currentPage2 = val;

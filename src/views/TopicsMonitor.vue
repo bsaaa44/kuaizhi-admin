@@ -38,13 +38,16 @@
       <el-table-column prop="bot_id" width="100" label="机器人ID"></el-table-column>
       <el-table-column prop="bot_name" width="100" label="机器人名称"></el-table-column>
       <el-table-column prop="job_id" label="任务ID" width="100"></el-table-column>
-      <el-table-column prop="topic_ids" label="主题ID" width="100">
+      <el-table-column prop="topic_ids" label="主题ID" width="160">
         <template slot-scope="scope">
-          <span v-for="(item,index) in scope.row.topic_ids" :key="index">{{item}} </span>
+          <p v-for="(item,index) in scope.row.topic_ids" :key="index">{{item}}</p>
         </template>
       </el-table-column>
       <el-table-column prop="created_at" width="100" label="创建时间"></el-table-column>
       <el-table-column prop="job_params" label="主题配置">
+        <template slot-scope="scope">
+          <div v-html="showParams(scope.row.job_params)"></div>
+        </template>
         <!-- <template slot-scope="scope"> -->
         <!-- <el-button type="text" @click="handleShowConfig(scope)">点击查看</el-button> -->
         <!-- </template> -->
@@ -52,13 +55,19 @@
       <el-table-column label="任务状态" width="100">
         <template slot-scope="scope">{{scope | showStatus}}</template>
       </el-table-column>
+      <el-table-column label="删除原因">
+        <template slot-scope="scope">
+          <div @click="handleEditReason(scope)">{{scope.row.job_delete_reason}}</div>
+        </template>
+      </el-table-column>
       <el-table-column label="任务处理" width="150">
         <template slot-scope="scope">
           <el-button type="text" v-if="scope.row.job_status !=0" @click="handleDelete(scope)">删除</el-button>
+          <el-button type="text" v-if="scope.row.job_status ==0" @click="handleEditReason(scope)">删除</el-button>
           <el-button type="text" v-if="scope.row.job_status == 1" @click="handlePause(scope)">暂停</el-button>
           <el-button
             type="text"
-            v-if="scope.row.job_status == 2||scope.row.job_status == 3"
+            v-if="scope.row.job_status == 0||scope.row.job_status == 2||scope.row.job_status == 3"
             @click="handleStart(scope)"
           >启用</el-button>
         </template>
@@ -119,6 +128,40 @@ export default {
     this.handleGetList();
   },
   methods: {
+    handleEditReason: function(scope) {
+      this.$prompt("请输入删除理由", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        inputValue: scope.row.job_delete_reason
+      })
+        .then(val => {
+          let data = {
+            job_id: scope.row.job_id,
+            reason: val.value
+          };
+          this.$utils.axiosRequest(
+            "POST",
+            `/job/update-reason`,
+            "",
+            data,
+            res => {
+              this.handleGetList();
+            },
+            res => {}
+          );
+        })
+        .catch(() => {});
+    },
+    showParams: function(param) {
+      let rxp = /"(http[^"]+)"/;
+      if (rxp.test(param)) {
+        return (param = param.replace(rxp, function(match) {
+          return `<a href=${match} target="_blank">${match}</a>`;
+        }));
+      } else {
+        return param;
+      }
+    },
     handleStart: function(scope) {
       this.$confirm("是否执行该操作", "提示", {
         confirmButtonText: "确定",

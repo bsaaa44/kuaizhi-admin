@@ -1,7 +1,12 @@
 <template>
   <div>
     <div class="tools-bar">
-      <el-select v-model="topicInp" placeholder="请选择" size="mini" style="width:120px;margin-right:10px">
+      <el-select
+        v-model="topicInp"
+        placeholder="请选择"
+        size="mini"
+        style="width:120px;margin-right:10px"
+      >
         <el-option label="请选择" value></el-option>
         <el-option v-for="item in optionsList" :key="item.id" :label="item.name" :value="item.id"></el-option>
       </el-select>
@@ -40,10 +45,39 @@
     </div>
     <div class="table-block">
       <el-table :data="dataList" v-loading="tableLoading" :height="maxHeight">
-        <el-table-column prop="id" label="信息ID" width="100"></el-table-column>
+        <el-table-column label="信息ID" width="100">
+          <template slot-scope="scope">
+            <el-button type="text" @click="handleIDClick(scope)">{{scope.row.id}}</el-button>
+          </template>
+        </el-table-column>
         <el-table-column prop="created_at" label="发布时间" width="100"></el-table-column>
-        <el-table-column prop="title" label="信息标题"></el-table-column>
+        <el-table-column prop="title" label="信息标题" width="100"></el-table-column>
         <el-table-column prop="text" label="信息简介"></el-table-column>
+        <el-table-column label="信息媒体">
+          <template slot-scope="scope">
+            <div v-if="scope.row.video!=''" class="media-box">
+              <div
+                v-if="scope.row.video.cover"
+                @click="handleShowVideoPop(scope)"
+                class="video-box"
+              >
+                <img :src="scope.row.video.cover" />
+                <img src="../assets/img/play.png" class="img-play" />
+              </div>
+              <div v-else>
+                <el-button type="text" @click="handleShowVideoPop(scope)">[视频]</el-button>
+              </div>
+            </div>
+            <div v-else class="media-box">
+              <img
+                :src="item"
+                v-for="(item,index) in scope.row.images"
+                :key="index"
+                @click="handleShowImagePop(item)"
+              />
+            </div>
+          </template>
+        </el-table-column>
         <el-table-column prop="url" label="原文链接"></el-table-column>
         <el-table-column prop="topic_id" label="主题ID" width="100"></el-table-column>
         <el-table-column prop="name" label="主题名称" width="100"></el-table-column>
@@ -65,6 +99,24 @@
         @current-change="bindPageChange"
       ></el-pagination>
     </div>
+    <el-dialog :visible.sync="showImagePop" class="media-dialog" width="700px">
+      <div v-if="currentItem!=''">
+        <img :src="currentItem.media.url" class="dialog-img" />
+      </div>
+    </el-dialog>
+    <el-dialog :visible.sync="showVideoPop" class="media-dialog" width="700px">
+      <div v-if="currentItem!=''">
+        <video
+          id="myPlayer"
+          class="video-js vjs-default-skin vjs-big-play-centered"
+          :poster="currentItem.media.cover"
+          preload="auto"
+          ref="myVideo"
+        >
+          <source :src="currentItem.media.url" type="application/x-mpegURL" />
+        </video>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -80,7 +132,11 @@ export default {
       paginate: "",
       dataList: [],
       optionsList: [],
+      player: "",
       tableLoading: false,
+      showImagePop: false,
+      showVideoPop: false,
+      currentItem: "",
       maxHeight: 0
     };
   },
@@ -90,6 +146,60 @@ export default {
     this.handleGetTopicList();
   },
   methods: {
+    handleShowVideoPop: function(scope) {
+      this.showVideoPop = true;
+      let obj = {};
+      obj.media = {};
+      if (scope.row.video.cover) {
+        obj.media.cover = scope.row.video.cover;
+        obj.media.url = scope.row.video.m3u8;
+      } else {
+        obj.media.cover = "";
+        obj.media.url = scope.row.video;
+      }
+      this.currentItem = obj;
+      this.$nextTick(() => {
+        if (this.player == "") {
+          this.initPlayer();
+        } else {
+          if (scope.row.video.cover) {
+            this.player.poster(scope.row.video.cover);
+            this.player.src(scope.row.video.m3u8);
+          } else {
+            this.player.src(scope.row.video);
+          }
+        }
+      });
+    },
+    initPlayer: function() {
+      let self = this;
+      let id = `myPlayer`;
+      let player = this.$video(
+        id,
+        {
+          width: 600,
+          height: 337,
+          controls: true
+        },
+        function() {
+          this.on("play", function() {
+            // self.$emit("onVideoPlay",{index: self.index})
+          });
+        }
+      );
+      this.player = player;
+    },
+    handleShowImagePop: function(url) {
+      this.showImagePop = true;
+      this.$nextTick(() => {
+        this.currentItem = {};
+        this.currentItem.media = {};
+        this.currentItem.media.url = url;
+      });
+    },
+    handleIDClick: function(scope) {
+      window.open(`https://kzfeed.com/card?id=${scope.row.hash_id}`);
+    },
     handleGetTopicList: function() {
       this.$utils.axiosRequest(
         "GET",
@@ -106,7 +216,7 @@ export default {
       let data = {
         status: this.statusInp,
         keyword: this.keyword,
-        topic_id: this.topicInp == ""?undefined:this.topicInp,
+        topic_id: this.topicInp == "" ? undefined : this.topicInp,
         start_time: this.dataRange != null ? this.dataRange[0] : "",
         end_time: this.dataRange != null ? this.dataRange[1] : ""
       };
@@ -116,7 +226,7 @@ export default {
       this.keyword = "";
       this.statusInp = "";
       this.dataRange = "";
-      this.topicInp = ""
+      this.topicInp = "";
       this.currentPage = 1;
       this.handleGetList();
     },
@@ -124,7 +234,7 @@ export default {
       this.currentPage = val;
       let data = {
         keyword: this.keyword,
-        topic_id: this.topicInp == ""?undefined:this.topicInp,
+        topic_id: this.topicInp == "" ? undefined : this.topicInp,
         status: this.statusInp,
         page: this.currentPage,
         start_time: this.dataRange != null ? this.dataRange[0] : "",
@@ -312,5 +422,32 @@ export default {
   .uploader {
     margin-right: 10px;
   }
+}
+
+.video-box {
+  display: flex;
+  flex-flow: row;
+  align-items: center;
+  justify-content : center;
+}
+
+.media-box {
+  position: relative;
+
+  img {
+    height: 100px;
+  }
+
+  .img-play {
+    height: 50px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+}
+
+.dialog-img {
+  width: 100%;
 }
 </style>

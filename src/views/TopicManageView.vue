@@ -293,7 +293,9 @@
     </el-dialog>
     <el-dialog title='标签管理' :visible.sync='showLabelPop' class='label-dialog' width='300'>
       <div v-for="(item,index) in labelList" :key="index">
-        <p class='cateTitle'>{{item.category_name}}</p>
+        <p class='cateTitle'>{{item.category_name}}
+          <el-button size='mini' type="primary" @click="handleAddLabel(item.category_id)">添加</el-button>
+        </p>
         <p>
           <el-checkbox v-for="(it,idx) in item.labels" @change="handleCheckBoxChange(index,idx)" :label="it.name" :value="it.checked === 0?false:true" :key="idx"></el-checkbox>
         </p>
@@ -373,6 +375,22 @@ export default {
     this.handleGetList()
   },
   methods:{
+    handleAddLabel: function(id){
+      this.$prompt('请输入标签名', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消'
+      }).then(({ value }) => {
+        let data = {
+          category_id: id,
+          name: value
+        }
+        this.$utils.axiosRequest('POST', `/label/store`, "",data, res=>{
+          this.handleShowLabelList(this.currentScope)
+      },res=>{
+        
+      })
+      }).catch()
+    },
     handleCheckBoxChange: function(index,idx){
       let data = {
         topic_id: this.currentScope.row.id,
@@ -399,7 +417,7 @@ export default {
       })
     },
     handleOpenWeb: function(scope){
-      window.open("https://kz.sync163.com/web/topic/"+scope.row.hash_id)
+      window.open("https://kzfeed.com/home/themeDetail?id="+scope.row.hash_id)
     },
     handleGetRecordList: function(){
       let data = {

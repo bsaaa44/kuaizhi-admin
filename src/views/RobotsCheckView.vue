@@ -86,6 +86,7 @@
       <div v-for='(item,index) in checkList' :key='index' style="margin-top:10px">
         <div class='time'>{{item.created_at}}</div>
         <div class='text'>{{item.status == -4?"管理员下架":item.status == -3?"用户主动下架":item.status == -2?"用户取消审核":item.status == -1?"驳回":item.status == 0?"审核中":"已上架"}}</div>
+        <div>{{item.reason}}</div>
       </div>
       <div v-if='checkList.length<=0'>无</div>
     </el-dialog>

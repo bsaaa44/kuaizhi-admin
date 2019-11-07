@@ -8,7 +8,7 @@ module.exports = {
       proxy: {
           '/admin': {
               // 目标 API 地址
-              target: 'http://dev.kz.sync163.com/',
+              target: 'https://kz.sync163.com/',
               // 如果要代理 websockets
               ws: true,
               // 将主机标头的原点更改为目标URL

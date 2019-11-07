@@ -78,7 +78,7 @@
     <el-dialog title="配置" :visible.sync="showConfig" class="edit-dialog" width="500">
       <el-form>
         <el-form-item label="公众号名称">
-          <el-input v-model="nameInp" disabled="true"/>
+          <el-input v-model="nameInp" disabled="true" />
         </el-form-item>
         <el-form-item label="微信号">
           <el-input v-model="gzhInp" />
@@ -91,8 +91,13 @@
     </el-dialog>
     <el-dialog title="所属主题列表" :visible.sync="showTopicDialog" class="edit-dialog" width="500">
       <el-table :data="topicList">
-        <el-table-column prop="id" label="id"></el-table-column>
+        <el-table-column prop="id">
+          <template slot-scope="scope">
+            <el-button type="text" @click="handleOpenWeb(scope)">{{scope.row.id}}</el-button>
+          </template>
+        </el-table-column>
         <el-table-column prop="name" label="名称"></el-table-column>
+        <el-table-column prop="cards_count" label="动态数"></el-table-column>
       </el-table>
     </el-dialog>
   </div>
@@ -125,27 +130,27 @@ export default {
     this.handleGetAccountList();
   },
   methods: {
-    handleConfirm: function(){
+    handleConfirm: function() {
       let data = {
         account: this.gzhInp,
         id: this.currentScope.row.id
-      }
+      };
       this.$utils.axiosRequest(
         "POST",
         `/topic/waiting-follow-gzh/set-gzh-account`,
         "",
         data,
         res => {
-          this.showConfig = false
-          this.bindPageChange(this.currentPage)
+          this.showConfig = false;
+          this.bindPageChange(this.currentPage);
         },
         res => {}
       );
     },
     handleShowEdit: function(scope) {
       this.currentScope = scope;
-      this.nameInp = scope.row.gzh_name
-      this.gzhInp = scope.row.gzh_account
+      this.nameInp = scope.row.gzh_name;
+      this.gzhInp = scope.row.gzh_account;
       this.showConfig = true;
     },
     handleSubscriberChange: function(scope) {
@@ -197,6 +202,9 @@ export default {
         },
         res => {}
       );
+    },
+    handleOpenWeb: function(scope) {
+      window.open("https://kzfeed.com/home/themeDetail?id=" + scope.row.hash_id);
     },
     handleGetList: function() {
       this.tableLoading = true;
